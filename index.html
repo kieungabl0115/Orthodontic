@@ -1981,9 +1981,16 @@ function refreshImages() {
   const p = Store.get(S.pid); if (!p) return;
   const set = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
   set('films', filmsHTML(p)); set('imgs', imagesHTML(p)); set('visits', visitsHTML(p)); set('model-imgs', modelImagesHTML(p));
-  // Re-render bệnh án tab nếu đang mở (có chứa baBigImgBlock inline)
+  // Re-render tabs có baBigImgBlock inline khi đang mở
+  const { IV, V, VI, VII } = benhAnSections(p);
   const baPanel = document.getElementById('panel-benh_an');
   if (baPanel && !baPanel.hidden) { baPanel.innerHTML = benhAnHTML(p); }
+  const examPanel = document.getElementById('panel-exam');
+  if (examPanel && !examPanel.hidden) { examPanel.innerHTML = IV + V; }
+  const xrayPanel = document.getElementById('panel-xray');
+  if (xrayPanel && !xrayPanel.hidden) { xrayPanel.innerHTML = VII; }
+  const modelPanel = document.getElementById('panel-model');
+  if (modelPanel && !modelPanel.hidden) { modelPanel.innerHTML = VI; }
 }
 let unwatchImgs = null;
 function stopWatchingImages() { if (unwatchImgs) { try { unwatchImgs(); } catch (e) {} unwatchImgs = null; } }
@@ -3357,10 +3364,21 @@ function switchTab(k) {
   S.tab = k;
   $$('[role="tab"]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === k)));
   $$('[role="tabpanel"]').forEach(p => { p.hidden = p.id !== 'panel-' + k; });
-  /* Re-render benh_an panel on switch so image blocks reflect loaded state */
-  if (k === 'benh_an') {
+  /* Re-render panels có baBigImgBlock khi switch tab, để ảnh hiển thị đúng */
+  if (k === 'benh_an' || k === 'exam' || k === 'xray' || k === 'model') {
     const p = Store.get(S.pid);
-    if (p) { const el = document.getElementById('panel-benh_an'); if (el) el.innerHTML = benhAnHTML(p); }
+    if (p) {
+      const el = document.getElementById('panel-' + k);
+      if (el) {
+        if (k === 'benh_an') { el.innerHTML = benhAnHTML(p); }
+        else {
+          const { IV, V, VI, VII } = benhAnSections(p);
+          if (k === 'exam')  el.innerHTML = IV + V;
+          if (k === 'xray')  el.innerHTML = VII;
+          if (k === 'model') el.innerHTML = VI;
+        }
+      }
+    }
   }
 }
 
